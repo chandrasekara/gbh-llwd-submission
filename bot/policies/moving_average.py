@@ -3,6 +3,8 @@ from collections import deque
 import numpy as np
 from policies.policy import Policy
 
+# out of the box provided by hackathon - uses moving average to decide on actions
+
 class MovingAveragePolicy(Policy):
     def __init__(self, window_size=5):
         """
