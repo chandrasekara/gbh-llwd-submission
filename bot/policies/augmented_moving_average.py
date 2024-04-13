@@ -6,7 +6,7 @@ from policies.policy import Policy
 # out of the box provided by hackathon - uses moving average to decide on actions
 
 class AugmentedMovingAveragePolicy(Policy):
-    def __init__(self, window_size=5):
+    def __init__(self, window_size=100):
         """
         Constructor for the MovingAveragePolicy.
 
