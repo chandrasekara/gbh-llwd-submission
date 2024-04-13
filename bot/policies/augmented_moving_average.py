@@ -25,6 +25,7 @@ class AugmentedMovingAveragePolicy(Policy):
 
         if float(market_price) < 0:
             charge_kW = internal_state['max_charge_rate']
+            solar_to_battery = int(float(external_state['pv_power']))
         elif len(self.price_history) == self.window_size:
             moving_average = np.mean(self.price_history)
             
@@ -35,9 +36,6 @@ class AugmentedMovingAveragePolicy(Policy):
         else:
             charge_kW = 0
         
-        if float(external_state['pv_power']) >= 6:
-            solar_to_battery = int(float(external_state['pv_power']))
-
 
         return solar_to_battery, charge_kW
 
