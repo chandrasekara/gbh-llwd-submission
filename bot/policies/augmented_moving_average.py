@@ -17,6 +17,9 @@ class AugmentedMovingAveragePolicy(Policy):
         self.price_history = deque(maxlen=window_size)
 
     def act(self, external_state, internal_state):
+
+        solar_to_battery = 0
+
         market_price = external_state['price']
         self.price_history.append(market_price)
 
@@ -31,8 +34,12 @@ class AugmentedMovingAveragePolicy(Policy):
                 charge_kW = internal_state['max_charge_rate']
         else:
             charge_kW = 0
+        
+        if float(external_state['pv_power']) >= 0:
+            solar_to_battery = int(float(external_state['pv_power']))
 
-        return 0, charge_kW
+
+        return solar_to_battery, charge_kW
 
     def load_historical(self, external_states: pd.DataFrame):   
         for price in external_states['price'].values:
