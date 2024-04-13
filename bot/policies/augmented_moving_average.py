@@ -31,6 +31,12 @@ class AugmentedMovingAveragePolicy(Policy):
             
             if market_price > moving_average:
                 charge_kW = -internal_state['max_charge_rate']
+                ## LOW_BATT_THRESHOLD should be very small, around 20% at absolute maximum
+                ## CHARGE_SCALE_FACTOR should take into account not being too high to avoid the sales to the grid but not too low such
+                ## that we get periods of 0% capacity where we'll miss out on sales when the price is high due to battery being drained
+                ## and pv == 0
+                #if battery_capacity < LOW_BATT_THRESHOLD:
+                #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
                 charge_kW = internal_state['max_charge_rate']
                 solar_to_battery = int(0.7 * int(float(external_state['pv_power'])))
