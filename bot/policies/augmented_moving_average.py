@@ -33,6 +33,7 @@ class AugmentedMovingAveragePolicy(Policy):
                 charge_kW = -internal_state['max_charge_rate']
             else:
                 charge_kW = internal_state['max_charge_rate']
+                solar_to_battery = int(0.3 * int(float(external_state['pv_power'])))
         else:
             charge_kW = 0
         
