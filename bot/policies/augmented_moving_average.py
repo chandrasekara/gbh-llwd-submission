@@ -35,7 +35,7 @@ class AugmentedMovingAveragePolicy(Policy):
         else:
             charge_kW = 0
         
-        if float(external_state['pv_power']) >= 0:
+        if float(external_state['pv_power']) >= 6:
             solar_to_battery = int(float(external_state['pv_power']))
 
 
