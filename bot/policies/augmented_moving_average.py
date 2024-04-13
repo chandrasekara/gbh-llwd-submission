@@ -20,7 +20,7 @@ class AugmentedMovingAveragePolicy(Policy):
         market_price = external_state['price']
         self.price_history.append(market_price)
 
-        if float(market_price) > 600:
+        if float(market_price) > 150:
             charge_kW = -internal_state['max_charge_rate']
         elif float(market_price) < 0:
             charge_kW = internal_state['max_charge_rate']
@@ -34,7 +34,7 @@ class AugmentedMovingAveragePolicy(Policy):
         else:
             charge_kW = 0
 
-        return float(external_state["pv_power"]), charge_kW
+        return 0, charge_kW
 
     def load_historical(self, external_states: pd.DataFrame):   
         for price in external_states['price'].values:
