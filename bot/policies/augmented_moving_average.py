@@ -20,9 +20,7 @@ class AugmentedMovingAveragePolicy(Policy):
         market_price = external_state['price']
         self.price_history.append(market_price)
 
-        if float(market_price) > 150:
-            charge_kW = -internal_state['max_charge_rate']
-        elif float(market_price) < 0:
+        if float(market_price) < 0:
             charge_kW = internal_state['max_charge_rate']
         elif len(self.price_history) == self.window_size:
             moving_average = np.mean(self.price_history)
