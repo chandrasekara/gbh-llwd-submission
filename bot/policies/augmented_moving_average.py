@@ -15,9 +15,11 @@ class AugmentedMovingAveragePolicy(Policy):
         super().__init__()
         self.window_size = window_size
         self.price_history = deque(maxlen=window_size)
+        self.battery_capacity_kwh = 13
 
     def act(self, external_state, internal_state):
 
+        #print(internal_state["battery_soc"])
         solar_to_battery = 0
 
         market_price = external_state['price']
@@ -35,11 +37,15 @@ class AugmentedMovingAveragePolicy(Policy):
                 ## CHARGE_SCALE_FACTOR should take into account not being too high to avoid the sales to the grid but not too low such
                 ## that we get periods of 0% capacity where we'll miss out on sales when the price is high due to battery being drained
                 ## and pv == 0
+                if (float(internal_state["battery_soc"])/13) < 0.2:
+                    print("yes")
+                    solar_to_battery = int(0.2 * int(float(external_state['pv_power'])))
                 #if battery_capacity < LOW_BATT_THRESHOLD:
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
                 charge_kW = internal_state['max_charge_rate']
                 solar_to_battery = int(0.7 * int(float(external_state['pv_power'])))
+                # we're potentially wasting excess charge here that could go to the grid -> we will get extra $$ usually in this case becuase it's off peak time
         else:
             charge_kW = 0
         
