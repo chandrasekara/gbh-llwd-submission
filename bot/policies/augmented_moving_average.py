@@ -38,12 +38,21 @@ class AugmentedMovingAveragePolicy(Policy):
                 ## and pv == 0
                 if (float(internal_state["battery_soc"])/13) < 0.2:
                     solar_to_battery = int(0.2 * int(float(external_state['pv_power'])))
+
                 #if battery_capacity < LOW_BATT_THRESHOLD:
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
-                charge_kW = internal_state['max_charge_rate']
-                # solar_to_battery = int(0.7 * int(float(external_state['pv_power'])))
-                # we're potentially wasting excess charge here that could go to the grid -> we will get extra $$ usually in this case becuase it's off peak time
+                
+                solar_to_battery = int(0.5 * int(float(external_state['pv_power'])))
+                charge_kW = internal_state['max_charge_rate'] - solar_to_battery
+
+                if float(solar_to_battery + charge_kW)/20 + internal_state["battery_soc"] > 13:
+                    solar_to_battery -= (float(solar_to_battery + charge_kW)/20 + internal_state["battery_soc"] - 13)
+                    if solar_to_battery < 0:
+                        charge_kW += solar_to_battery
+                        solar_to_battery = 0
+
+
         else:
             charge_kW = 0
         
