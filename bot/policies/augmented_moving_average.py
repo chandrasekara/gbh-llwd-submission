@@ -19,7 +19,6 @@ class AugmentedMovingAveragePolicy(Policy):
 
     def act(self, external_state, internal_state):
 
-        #print(internal_state["battery_soc"])
         solar_to_battery = 0
 
         market_price = external_state['price']
@@ -43,7 +42,7 @@ class AugmentedMovingAveragePolicy(Policy):
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
                 charge_kW = internal_state['max_charge_rate']
-                solar_to_battery = int(0.7 * int(float(external_state['pv_power'])))
+                # solar_to_battery = int(0.7 * int(float(external_state['pv_power'])))
                 # we're potentially wasting excess charge here that could go to the grid -> we will get extra $$ usually in this case becuase it's off peak time
         else:
             charge_kW = 0
