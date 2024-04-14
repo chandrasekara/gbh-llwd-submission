@@ -42,15 +42,8 @@ class AugmentedMovingAveragePolicy(Policy):
                 #if battery_capacity < LOW_BATT_THRESHOLD:
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
-                
-                solar_to_battery = int(0.5 * int(float(external_state['pv_power'])))
-                charge_kW = internal_state['max_charge_rate'] - solar_to_battery
+                charge_kW = internal_state['max_charge_rate']
 
-                if float(solar_to_battery + charge_kW)/20 + internal_state["battery_soc"] > 13:
-                    solar_to_battery -= (float(solar_to_battery + charge_kW)/20 + internal_state["battery_soc"] - 13)
-                    if solar_to_battery < 0:
-                        charge_kW += solar_to_battery
-                        solar_to_battery = 0
 
 
         else:
