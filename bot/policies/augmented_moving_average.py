@@ -38,7 +38,6 @@ class AugmentedMovingAveragePolicy(Policy):
                 ## that we get periods of 0% capacity where we'll miss out on sales when the price is high due to battery being drained
                 ## and pv == 0
                 if (float(internal_state["battery_soc"])/13) < 0.2:
-                    print("yes")
                     solar_to_battery = int(0.2 * int(float(external_state['pv_power'])))
                 #if battery_capacity < LOW_BATT_THRESHOLD:
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
