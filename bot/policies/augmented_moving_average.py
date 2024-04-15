@@ -2,7 +2,7 @@ import pandas as pd
 from collections import deque
 import numpy as np
 from policies.policy import Policy
-#
+##
 # out of the box provided by hackathon - uses moving average to decide on actions
 
 class AugmentedMovingAveragePolicy(Policy):
