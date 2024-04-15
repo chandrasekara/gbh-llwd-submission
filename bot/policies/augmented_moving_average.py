@@ -54,6 +54,10 @@ class AugmentedMovingAveragePolicy(Policy):
             else:
                 charge_kW = internal_state['max_charge_rate']
 
+                new_soc = float(internal_state["battery_soc"]) + (charge_kW)/20
+                if new_soc > 13:
+                    charge_kW = 0
+
 
 
         else:
