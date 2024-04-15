@@ -21,6 +21,8 @@ class AugmentedMovingAveragePolicy(Policy):
 
         solar_to_battery = 0
 
+        state_of_charge = float(internal_state["battery_soc"])/13
+
         market_price = external_state['price']
         self.price_history.append(market_price)
 
@@ -31,7 +33,14 @@ class AugmentedMovingAveragePolicy(Policy):
             moving_average = np.mean(self.price_history)
             
             if market_price > moving_average:
-                charge_kW = -internal_state['max_charge_rate']
+                if state_of_charge > 0.5:
+                    charge_kW = -internal_state['max_charge_rate']
+                elif state_of_charge > 0.25:
+                    charge_kW = 0.5 * -internal_state['max_charge_rate']
+                else:
+                    charge_kW = 0.25 * -internal_state['max_charge_rate']
+
+
                 ## LOW_BATT_THRESHOLD should be very small, around 20% at absolute maximum
                 ## CHARGE_SCALE_FACTOR should take into account not being too high to avoid the sales to the grid but not too low such
                 ## that we get periods of 0% capacity where we'll miss out on sales when the price is high due to battery being drained
