@@ -8,7 +8,7 @@ import numpy as np
 import json
 
 from policies import policy_classes
-from tariff_environment import BatteryEnv, PRICE_KEY, TIMESTAMP_KEY
+from environment import BatteryEnv, PRICE_KEY, TIMESTAMP_KEY
 from plotting import plot_results
 
 def float_or_none(value):
