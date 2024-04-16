@@ -17,18 +17,23 @@ class AugmentedMovingAveragePolicy(Policy):
         self.price_history = deque(maxlen=window_size)
         self.battery_capacity_kwh = 13
         self.observed_maximum_price = 1
+        self.observed_minimum_price = 500
 
     def act(self, external_state, internal_state):
 
         solar_to_battery = 0
+        charge_kW = 0
 
         market_price = external_state['price']
         if market_price > self.observed_maximum_price and market_price < 300:
             self.observed_maximum_price = market_price
+
+        if market_price < self.observed_minimum_price:
+            self.observed_minimum_price = market_price
         
         self.price_history.append(market_price)
 
-        #print(self.observed_maximum_price)
+        #print(self.observed_minimum_price)
 
         if float(market_price) < 0:
             charge_kW = internal_state['max_charge_rate']
@@ -51,10 +56,11 @@ class AugmentedMovingAveragePolicy(Policy):
                 #if battery_capacity < LOW_BATT_THRESHOLD:
                 #   solar_to_battery = int(CHARGE_SCALE_FACTOR * int(float(external_state['pv_power'])))
             else:
-                charge_kW = internal_state['max_charge_rate']
-                new_soc = float(internal_state["battery_soc"]) + (charge_kW)/20
-                if new_soc > 13:
-                    charge_kW = 0
+                if market_price < 0.3 * self.observed_maximum_price:
+                    charge_kW = internal_state['max_charge_rate']
+                    new_soc = float(internal_state["battery_soc"]) + (charge_kW)/20
+                    if new_soc > 13:
+                        charge_kW = 0
 
 
         else:
