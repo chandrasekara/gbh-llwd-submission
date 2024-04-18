@@ -1,7 +1,11 @@
 {
   "policy": {
-    "class_name": "AugmentedMovingAveragePolicy",
+    "class_name": "PV1AugmentedMovingAveragePolicy",
     "parameters": {
+      "window_size": 106.6463940963149,
+      "low_batt_threshold": 0.10313315456733108,
+      "charge_scale_factor": 0.9998565423302352,
+      "discharge_scale_factor": 0.8669912628829479
     }
   }
 }
