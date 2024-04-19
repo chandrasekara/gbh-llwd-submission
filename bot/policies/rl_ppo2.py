@@ -23,17 +23,29 @@ class RlPpo2Policy(Policy):
         """
         super().__init__()
         self.window_size = window_size
-        self.price_history = deque(maxlen=window_size)
+        # self.price_history = deque(maxlen=window_size)
+        self.price_history = []
 
         self.rlpolicy = PPO.load("./models/spot_soc_pv/PPO29900x100k_steps.zip")
         self.capacity_kWh = 13.0
         self.max_charge_rate = 5.0
+        
+    # def calculate_mean_std(self):
+
+    #     if not self.price_history:
+    #         return 0, 0  # Return 0, 0 if there is no historical data
+        
+    #     prices_array = np.array(self.price_history)
+    #     mean_price = np.mean(prices_array)
+    #     std_price = np.std(prices_array)
+        
+    #     return mean_price, std_price
 
     def act(self, external_state, internal_state):
         market_price = external_state["price"]
         pv_power = external_state["pv_power"]
-
-        p = (market_price - P_mean) / 3 * P_std
+        # p_mean, p_std = calculate_mean_std(self)
+        p = (market_price - P_mean) / 3 * P_std # Maybe get this from the historical data
         soc = internal_state["battery_soc"] / self.capacity_kWh
         pv = pv_power / pv_max
         if p > 1:
