@@ -25,7 +25,8 @@ class RlPpo2Policy(Policy):
         self.window_size = window_size
         self.price_history = deque(maxlen=window_size)
 
-        self.rlpolicy = PPO.load("./models/spot_soc_pv/PPO29900x100k_steps.zip")
+        # self.rlpolicy = PPO.load("./models/spot_soc_pv/PPO29900x100k_steps.zip")
+        self.rlpolicy = PPO.load("./models/PPOv2_step77M.zip")
         self.capacity_kWh = 13.0
         self.max_charge_rate = 5.0
 
@@ -50,8 +51,8 @@ class RlPpo2Policy(Policy):
         observation = np.array([p, soc, pv], dtype=np.float32)
         action = self.rlpolicy.predict(observation)
         # print(action)
-        charge_kW = action[0][0] * self.max_charge_rate
-        solar_kW_to_battery = action[0][1] * self.max_charge_rate
+        charge_kW = action[0][1] * self.max_charge_rate
+        solar_kW_to_battery = action[0][0] * self.max_charge_rate
 
         return solar_kW_to_battery, charge_kW
 
