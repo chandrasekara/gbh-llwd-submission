@@ -1,6 +1,6 @@
 {
   "policy": {
-    "class_name": "AugmentedMovingAveragePolicy",
+    "class_name": "RlPpo2Policy",
     "parameters": {
     }
   }

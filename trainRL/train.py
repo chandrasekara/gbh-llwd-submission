@@ -2,12 +2,17 @@ import os
 import sys
 
 import pandas as pd
-from stable_baselines3 import A2C, PPO
+from stable_baselines3 import PPO
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 from BGT.env import BatteryGym
+
+MODEL_DIR = "./models/spot_soc_pv/"
+ALGO = "PPO"
+VERSION = "2"
+TENSORBOARD_LOG_DIR = "./Battery_tensorboard/"
 
 
 def main():
@@ -15,18 +20,21 @@ def main():
 
     env = BatteryGym(df)
 
-    # model = A2C("MlpPolicy", env, verbose=1, tensorboard_log="./Battery_tensorboard/")
-    model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./Battery_tensorboard/")
+    tensorboard_log = os.path.join(TENSORBOARD_LOG_DIR, f"{ALGO}v{VERSION}")
+
+    model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=tensorboard_log)
+    time_steps = 1_000_000
     for i in range(1, 10000):
         if i % 100 == 0:
-            # print(f"Training run {i}")
-            print(f"Training run {i}")
+            steps = f"{i}M"
+            model_name = f"{ALGO}v{VERSION}_step{steps}"
+
             model.learn(
-                total_timesteps=10_000,
-                tb_log_name=f"PPO2steps_{i}_10k",
+                total_timesteps=time_steps,
+                tb_log_name=model_name,
                 reset_num_timesteps=False,
             )
-            model.save(f"./models/spot_soc_pv/PPO2{i}x100k_steps")
+            model.save(f"{MODEL_DIR}{model_name}")
 
 
 def get_clean_data():
