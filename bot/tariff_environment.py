@@ -10,14 +10,16 @@ Units used in this file:
 - Price: dollars per kilowatt-hour ($/kWh)
 """
 
-import pandas as pd
-import numpy as np
 from collections import deque
-from typing import Tuple
+from typing import Optional, Tuple
+
+import numpy as np
+import pandas as pd
 
 INTERVAL_DURATION = 5  # Duration of each dispatch interval in minutes
-PRICE_KEY = 'price'
-TIMESTAMP_KEY = 'timestamp'
+PRICE_KEY = "price"
+TIMESTAMP_KEY = "timestamp"
+
 
 def kWh_to_kW(kWh: float) -> float:
     """
@@ -28,6 +30,7 @@ def kWh_to_kW(kWh: float) -> float:
     """
     return kWh / (INTERVAL_DURATION / 60)
 
+
 def kW_to_kWh(kWh: float) -> float:
     """
     Convert energy in kilowatt-hours (kWh) to power in kilowatts (kW).
@@ -37,8 +40,11 @@ def kW_to_kWh(kWh: float) -> float:
     """
     return kWh * (INTERVAL_DURATION / 60)
 
+
 class Battery:
-    def __init__(self, capacity_kWh: float, max_charge_rate_kW: float, initial_charge_kWh: float):
+    def __init__(
+        self, capacity_kWh: float, max_charge_rate_kW: float, initial_charge_kWh: float
+    ):
         self.capacity_kWh = capacity_kWh
         self.initial_charge_kWh = initial_charge_kWh
         self.max_charge_rate_kW = max_charge_rate_kW
@@ -46,10 +52,10 @@ class Battery:
 
     def reset(self):
         self._state_of_charge_kWh = min(self.initial_charge_kWh, self.capacity_kWh)
-    
+
     def charge_at(self, kW: float) -> float:
         kW = min(kW, self.max_charge_rate_kW)
-        kWh_to_add = kW_to_kWh(kW) 
+        kWh_to_add = kW_to_kWh(kW)
         kWh_to_add = min(kWh_to_add, self.capacity_kWh - self._state_of_charge_kWh)
         self._state_of_charge_kWh += kWh_to_add
         return kWh_to_add
@@ -70,7 +76,15 @@ class BatteryEnv:
     """
     Environment for simulating battery operation in the National Electricity Market (NEM) context.
     """
-    def __init__(self, data, capacity_kWh: float = 13, max_charge_rate_kW: float = 5, initial_charge_kWh: float = 7.5, initial_profit: float = 0.0):
+
+    def __init__(
+        self,
+        data,
+        capacity_kWh: float = 13,
+        max_charge_rate_kW: float = 5,
+        initial_charge_kWh: float = 7.5,
+        initial_profit: float = 0.0,
+    ):
         self.battery = Battery(capacity_kWh, max_charge_rate_kW, initial_charge_kWh)
         self.market_data = data
         self.total_profit = initial_profit
@@ -82,17 +96,23 @@ class BatteryEnv:
 
         return self.market_data.iloc[self.current_step], self.get_info(0)
 
-    def step(self, charge_kW: float, solar_kW_to_battery:int, total_solar_kW:int) -> Tuple[pd.Series, dict]:
+    def step(
+        self, charge_kW: float, solar_kW_to_battery: int, total_solar_kW: int
+    ) -> Tuple[Optional[pd.Series], Optional[dict]]:
         if self.current_step >= len(self.market_data):
             return None, None
         market_price_mWh = self.market_data.iloc[self.current_step][PRICE_KEY]
         timestamp = self.market_data.iloc[self.current_step][TIMESTAMP_KEY]
 
-        kW_currently_charging, solar_profit_delta = self.process_solar(solar_kW_to_battery, total_solar_kW, market_price_mWh, timestamp)
+        kW_currently_charging, solar_profit_delta = self.process_solar(
+            solar_kW_to_battery, total_solar_kW, market_price_mWh, timestamp
+        )
 
         max_charge_kW = self.battery.max_charge_rate_kW - kW_currently_charging
-        battery_profit_delta = self.charge_discharge(min(charge_kW, max_charge_kW), market_price_mWh, timestamp)
-        
+        battery_profit_delta = self.charge_discharge(
+            min(charge_kW, max_charge_kW), market_price_mWh, timestamp
+        )
+
         external_state = self.get_info(battery_profit_delta + solar_profit_delta)
 
         self.current_step += 1
@@ -104,9 +124,9 @@ class BatteryEnv:
     def with_tariff(self, profit, is_export, timestamp):
         if isinstance(timestamp, str):
             # timestamp is a UTC string make timestamp a pd.timestamp object then convert to EXACTLY +10, not dependent on any other timezone
-            utc_timestamp = pd.Timestamp(timestamp, tz='UTC')
+            utc_timestamp = pd.Timestamp(timestamp, tz="UTC")
             plus_10 = pd.Timedelta(hours=10)
-            timestamp = utc_timestamp + plus_10 
+            timestamp = utc_timestamp + plus_10
 
         is_peak = timestamp.hour >= 17 and timestamp.hour < 21
 
@@ -114,12 +134,18 @@ class BatteryEnv:
             if is_peak:
                 return profit + abs(profit * 0.30)
             return profit - abs(profit * 0.15)
-        
+
         if is_peak:
             return profit - abs(profit * 0.40)
         return profit - abs(profit * 0.05)
 
-    def process_solar(self, solar_kW_to_battery: int, total_solar_kW: int, market_price_mWh:int, timestamp) -> float:
+    def process_solar(
+        self,
+        solar_kW_to_battery: int,
+        total_solar_kW: int,
+        market_price_mWh: int,
+        timestamp,
+    ) -> Tuple[float, float]:
         solar_kW_to_battery = max(0, min(total_solar_kW, solar_kW_to_battery))
 
         kWh_charged = self.battery.charge_at(solar_kW_to_battery)
@@ -133,7 +159,9 @@ class BatteryEnv:
     def kWh_to_profit(self, energy_removed: float, spot_price_mWh: float) -> float:
         return round(energy_removed * spot_price_mWh / 1000, 4)
 
-    def charge_discharge(self, charge_kW: float, spot_price_mWh: float, timestamp) -> float:
+    def charge_discharge(
+        self, charge_kW: float, spot_price_mWh: float, timestamp
+    ) -> float:
         if charge_kW > 0:
             kWh_to_battery = self.battery.charge_at(charge_kW)
             profit = -self.kWh_to_profit(kWh_to_battery, spot_price_mWh)
@@ -154,9 +182,10 @@ class BatteryEnv:
         self.total_profit += profit_delta
         remaining_steps = len(self.market_data) - self.current_step - 1
         return {
-            'total_profit': self.total_profit,
-            'profit_delta': profit_delta,
-            'battery_soc': self.battery.state_of_charge_kWh,
-            'max_charge_rate': self.battery.max_charge_rate_kW,
-            'remaining_steps': remaining_steps
+            "total_profit": self.total_profit,
+            "profit_delta": profit_delta,
+            "battery_soc": self.battery.state_of_charge_kWh,
+            "max_charge_rate": self.battery.max_charge_rate_kW,
+            "remaining_steps": remaining_steps,
         }
+

@@ -74,4 +74,3 @@ class AugmentedMovingAveragePolicy(Policy):
     def load_historical(self, external_states: pd.DataFrame):   
         for price in external_states['price'].values:
             self.price_history.append(price)
-
