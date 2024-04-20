@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO
 
+
+PATH = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from BGT.env import P_mean, P_std, pv_max
 
@@ -22,7 +24,7 @@ class RlPpo2Policy(Policy):
         self.window_size = window_size
         self.price_history = []
 
-        self.rlpolicy = PPO.load("./models/spot_soc_pv/PPOv2_step29M.zip")
+        self.rlpolicy = PPO.load(os.path.join(PATH, "models/spot_soc_pv/PPOv2_step29M"))
         self.capacity_kWh = 13.0
         self.max_charge_rate = 5.0
 
